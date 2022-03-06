@@ -1,0 +1,48 @@
+{
+  "name": "vanity-eth-plus",
+  "version": "9.9.9",
+  "description": "Create billions ERC20 addresses, find vanity wallet addresses you want or any wallet address can deploy a vanity ERC20 contract address at given nonce",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TaoistWorld/Vanity-ETH-Contract-Address-Generator.git"
+  },
+  "keywords": [
+    "eth",
+    "erc20",
+    "ethereum",
+    "vanity",
+    "contract",
+    "wallet",
+    "address",
+    "checksum",
+    "ethereum-contract",
+    "blockchain",
+    "generator",
+    "vanity-eth",
+    "vanity-contract",
+    "vanity-generator"
+  ],
+  "author": "TaoistWorld",
+  "license": "MIT",
+  "dependencies": {
+    "ethereumjs-util": "^7.1.4",
+    "ethereumjs-wallet": "^1.0.2",
+    "keccak": "^3.0.1",
+    "randombytes": "^2.0.6",
+    "rlp": "^3.0.0",
+    "secp256k1": "^3.8.0",
+    "web3": "^1.7.0",
+    "yargs": "^17.3.1"
+  },
+  "bin": {
+    "vanitye": "index.js"
+  },
+  "bugs": {
+    "url": "https://github.com/TaoistWorld/Vanity-ETH-Contract-Address-Generator/issues"
+  },
+  "homepage": "https://github.com/TaoistWorld/Vanity-ETH-Contract-Address-Generator#readme"
+}

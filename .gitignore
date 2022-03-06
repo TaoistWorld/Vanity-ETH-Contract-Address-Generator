@@ -1,0 +1,10 @@
+node_modules/
+vanity-eth-plus/
+output-*.txt
+vscore-*.txt
+test.js
+test-vanity-contract.js
+vanitye-encryption-password.txt
+
+# Generate wallet files
+*.json
