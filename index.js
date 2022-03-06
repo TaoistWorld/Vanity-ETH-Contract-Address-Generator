@@ -1,7 +1,6 @@
 #! /usr/bin/env node
 
 const randomBytes = require('randombytes')
-const fs = require('fs')
 const yargs = require('yargs/yargs')
 const cm = require('./common')
 const { privateToAddress } = require('ethereumjs-util')
@@ -62,8 +61,14 @@ const parseArgv = (args) => {
         })
         .option('cpu', {
             alias: 'x',
-            describe: 'to specify number of children processes (maximum equals to number of CPUs), default = number of CPUs - 1',
+            describe: 'to specify number of children processes (maximum equals to number of CPUs), default = number of CPUs - 1. Machines with above 10 cores, to achieve max performance, should launch multiple processes with single core each (-x=1)',
             requiresArg: true,
+            number: true,
+        })
+        .option('exit', {
+            alias: 'e',
+            describe: 'Exit after X minutes',
+            requiresArg: false,
             number: true,
         })
         .option('debug', {
@@ -179,12 +184,12 @@ const main = function() {
         cm.createDir(contractWalletsDir)
     } catch (e) {
         console.error(e)
-        console.error('Failed to creates required directories!!!')
+        console.error('ERR: Failed to creates required directories!!!')
         console.error(`\t${baseDir}`)
         console.error(`\t${baseWalletsDir}`)
         console.error(`\t${addrWalletsDir}`)
         console.error(`\t${contractWalletsDir}`)
-        console.error('Is it permission issue?')
+        console.error(' Is it permission issue?')
         return
     }
     
@@ -192,10 +197,10 @@ const main = function() {
     const addressMode = argv.address !== undefined
     
     if (!contractMode && !addressMode) {
-        console.error('You must specify either flag `--contract` or `--address`')
+        console.error('ERR: You must specify either flag `--contract` or `--address`')
         return
     } else if (contractMode && addressMode) {
-        console.error('You can only specify one of too flag `--contract` or `--address`')
+        console.error('ERR: You can only specify one of too flag `--contract` or `--address`')
         return
     }
     
@@ -213,13 +218,13 @@ const main = function() {
 
         if (argv.allowNonce0 === true) {
             if (nonce < 0) {
-                console.error('Value of flag --nonce must be >= 0')
+                console.error('ERR: Value of flag --nonce must be >= 0')
                 return
             }
         } else {
             if (nonce < 1) {
-                console.error('Value of flag --nonce must be >= 1')
-                console.error('Minimum nonce is 1 because you must test every generated wallets before use (so nonce 0 will be used for the very first transaction)')
+                console.error('ERR: Value of flag --nonce must be >= 1')
+                console.error(' Minimum nonce is 1 because you must test every generated wallets before use (so nonce 0 will be used for the very first transaction)')
                 return
             }
         }
@@ -278,8 +283,6 @@ const main = function() {
     }
 
     cm.initVanityScoreTable()
-
-    const startMs = cm.getNowMs()
     
     if (cluster.isPrimary) {
         if (doNotSavePrivateKeyToLog) {
@@ -301,6 +304,14 @@ const main = function() {
     cfg.defaultWalletDir = defaultWalletDir
 
     let highestVanityScore = 0
+
+    const startMs = cm.getNowMs()
+
+    const inputExit = cm.parseExit(argv)
+    const exitAtMs = inputExit === undefined ? undefined : startMs + inputExit * 60 * 1000
+    if (exitAtMs && cluster.isPrimary) {
+        console.log(`Application will exits after ${inputExit} minutes`)
+    }
 
     if (cluster.isPrimary && isSingleCpuMode) {
         let lastReport = startMs // first report is 5s after started
@@ -346,6 +357,11 @@ const main = function() {
                 const timePassed = Math.floor((nowMs - startMs) / 1000)
 
                 console.log(`${timePassed} seconds passed, generated ${generated} addresses, avg ${(found / timePassed).toFixed(3)} found addr/s from ${Math.floor(generated / timePassed)} created addr/s. Highest vanity score = ${highestVanityScore}`)
+
+                if (exitAtMs && exitAtMs < nowMs) {
+                    console.log('Application is exitting due to flag `--exit`!')
+                    process.exit(0)
+                }
             }
         }
     } else if (cluster.isPrimary) {
@@ -377,7 +393,7 @@ const main = function() {
         if (isMaximumCpuUsed) {
             console.log('Due to all CPUs are used for computing so each child process will report by it\'s self')
         } else {
-            setInterval(function() {
+            const interval = setInterval(function() {
                 const nowMs = cm.getNowMs()
                 const timePassed = Math.floor((nowMs - startMs) / 1000)
 
@@ -388,6 +404,12 @@ const main = function() {
                     sumFound += cache[idx].found
                 }
                 console.log(`${timePassed} seconds passed, generated ${sumGenerated} addresses, avg ${(sumFound / timePassed).toFixed(3)} found addr/s from ${Math.floor(sumGenerated / timePassed)} created addr/s. Highest vanity score = ${highestVanityScore}`)
+
+                if (exitAtMs && exitAtMs < nowMs) {
+                    console.log('Application is exitting due to flag `--exit`!')
+                    clearInterval(interval)
+                    process.exit(0)
+                }
             }, 20000)
         }
 
@@ -449,6 +471,11 @@ const main = function() {
                         found: foundOnChild,
                         highestVanityScore: highestVanityScore,
                     })
+                }
+
+                if (exitAtMs && exitAtMs < nowMs) {
+                    console.log('Application is exitting due to flag `--exit`!')
+                    process.exit(0)
                 }
             }
         }
