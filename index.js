@@ -1,13 +1,11 @@
 #! /usr/bin/env node
 
 const randomBytes = require('randombytes')
-const fs = require('fs')
 const yargs = require('yargs/yargs')
 const cm = require('./common')
 const { privateToAddress } = require('ethereumjs-util')
 const cluster = require('cluster')
 const process = require('process')
-const { time } = require('console')
 
 const parseArgv = (args) => {
     return yargs(args)
