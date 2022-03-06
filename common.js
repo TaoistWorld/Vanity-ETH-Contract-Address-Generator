@@ -132,7 +132,8 @@ const appendFile = (logFile, logContent) => {
         //file written successfully
     } catch (err) {
         console.error(err)
-        console.error(`Failed to append log content: ${logContent}`)
+        console.error(`ERR: Failed to append content: '${logContent}'`)
+        console.error(` into file '${logFile}'`)
     }
 }
 
@@ -144,8 +145,8 @@ const readPassword = (isDebug = false) => {
             fs.writeFileSync(passwordFileName, '123456', { flag: 'a+' })
         } catch (err) {
             console.error(err)
-            console.error(`Unable to create default ${passwordFileName} file`)
-            console.error(`You may need to check permission, or manually create a file with name ${passwordFileName}, open it with a text editor and write your password you want to encrypt wallet info`)
+            console.error(`ERR: Unable to create default ${passwordFileName} file`)
+            console.error(`ERR: You may need to check permission, or manually create a file with name ${passwordFileName}, open it with a text editor and write your password you want to encrypt wallet info`)
             return
         }
     }
@@ -155,12 +156,12 @@ const readPassword = (isDebug = false) => {
         if (isDebug === true) {
             return password
         }
-        console.error(`You have to open ${passwordFileName} file and replace the default password 123456 with yours strongly secured password. This password will be used to create json wallet files (V3 keystore)`)
+        console.error(`ERR: You have to open ${passwordFileName} file and replace the default password 123456 with yours strongly secured password. This password will be used to create json wallet files (V3 keystore)`)
         return
     } else {
         const minimumPasswordLength = 6
         if (password.length < minimumPasswordLength) {
-            console.error(`Password is too short, require minimum ${minimumPasswordLength} characters in length`)
+            console.error(`ERR: Password is too short, require minimum ${minimumPasswordLength} characters in length`)
             return
         }
         if (cluster.isPrimary) {
@@ -176,19 +177,19 @@ const parsePatterns = (argv) => {
     const inputPatterns = argv.pattern
 
     if (!inputPatterns) {
-        console.error('No pattern was provided, use flag --pattern to specify')
+        console.error('ERR: No pattern was provided, use flag --pattern to specify')
         return
     }
 
     if (typeof inputPatterns == 'boolean') {
-        console.error('Wrong usage of flag --pattern, it requires parameter')
+        console.error('ERR: Wrong usage of flag --pattern, it requires parameter')
         return
     }
 
     const patterns = Array.isArray(inputPatterns) ? inputPatterns : [`${inputPatterns}`]
 
     if (patterns.length < 1) {
-        console.error('No pattern was provided, use flag --pattern to specify')
+        console.error('ERR: No pattern was provided, use flag --pattern to specify')
         return
     }
 
@@ -197,11 +198,11 @@ const parsePatterns = (argv) => {
         for (const idx in patterns) {
             const pattern = patterns[idx] = `${patterns[idx]}`.toLowerCase()
             if (pattern.length < minimumPatternStringLength) {
-                console.error(`Pattern '${pattern}' is too short, minimum length is ${minimumPatternStringLength}`)
+                console.error(`ERR: Pattern '${pattern}' is too short, minimum length is ${minimumPatternStringLength}`)
                 return
             }
             if (!re.test(pattern)) {
-                console.error(`Invalid pattern '${pattern}', only accept combination of 0-9 a-f (hex)`)
+                console.error(`ERR: Invalid pattern '${pattern}', only accept combination of 0-9 a-f (hex)`)
                 return
             }
             console.log(`Pattern '${pattern}' difficulty = ${Math.pow(16, pattern.length)}`)
@@ -223,18 +224,18 @@ const parseNonce = (argv) => {
     const nonce = argv.nonce
 
     if (nonce === undefined) {
-        console.error('Missing flag --nonce')
+        console.error('ERR: Missing flag --nonce')
         return
     }
 
     if (typeof nonce != 'number') {
-        console.error(`Flag --nonce must be a number (${typeof nonce} found)`)
+        console.error(`ERR: Flag --nonce must be a number (${typeof nonce} found)`)
         return
     }
 
     if (Math.floor(nonce) != nonce) {
-        console.error('Flag --nonce must be an integer')
-        console.error('Minimum nonce is 1 because you must test every generated wallets before use (so nonce 0 will be used for the very first transaction)')
+        console.error('ERR: Flag --nonce must be an integer')
+        console.error('ERR: Minimum nonce is 1 because you must test every generated wallets before use (so nonce 0 will be used for the very first transaction)')
         return
     }
 
@@ -256,7 +257,7 @@ const parseChildrenProcessesCount = (argv) => {
     }
 
     if (count < 1 || count > numCPUs) {
-        console.error(`Flag --threads must be a number between 1 and ${numCPUs}`)
+        console.error(`ERR: Flag --threads must be a number between 1 and ${numCPUs}`)
         return
     }
 
@@ -269,6 +270,21 @@ const parseChildrenProcessesCount = (argv) => {
         max: count >= numCPUs,
         single: count === 1,
     }
+}
+
+const parseExit = (argv) => {
+    const exit = argv.exit
+    if (!exit) {
+        return
+    }
+    if (exit < 0) {
+        console.error(`ERR: Value of flag --exit can not be negative`)
+        return
+    }
+    if (exit == 0) {
+        return
+    }
+    return exit
 }
 
 const minimumWow = minimumPatternStringLength * 2 + 2
@@ -305,6 +321,7 @@ module.exports = {
     parsePatterns: parsePatterns,
     parseNonce: parseNonce,
     parseChildrenProcessesCount: parseChildrenProcessesCount,
+    parseExit: parseExit,
     rateAddress: rateAddress,
     getNowMs: getNowMs,
     appendFile: appendFile,

@@ -1,6 +1,6 @@
 {
   "name": "vanity-eth-plus",
-  "version": "9.9.9",
+  "version": "9.99.9",
   "description": "Create billions ERC20 addresses, find vanity wallet addresses you want or any wallet address can deploy a vanity ERC20 contract address at given nonce",
   "main": "index.js",
   "scripts": {

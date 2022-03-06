@@ -75,6 +75,8 @@ File name starts with `vscore=X` is natural filter which helps you lower time wa
 
 6. `--cpu` (`-x`) is optional. App will launchs some children processes to maximum number of addr can generate per second, by default, it launchs `number of CPU cores - 1` children processes. By specify this flag, you can adjust number of children processes will be launched, value must be in range from minimum is 1 to maximum is number of CPU cores. It is not recommended to max it because your machine could be frozen
 
+7. `--exit` (`-e`) is optional, app will exit after X minutes if flag is provided
+
 Example a command uses all available flags:
 ```sh
 $ vanitye --contract --pattern 99999 88888 --nonce 0 --allowNonce0 --noPrivateKey --cpu 4
