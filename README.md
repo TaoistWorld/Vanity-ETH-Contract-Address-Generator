@@ -79,10 +79,10 @@ File name starts with `vscore=X` is natural filter which helps you lower time wa
 
 Example a command uses all available flags:
 ```sh
-$ vanitye --contract --pattern 99999 88888 --nonce 0 --allowNonce0 --noPrivateKey --cpu 4
+$ vanitye --contract --pattern 99999 88888 --nonce 0 --allowNonce0 --noPrivateKey --cpu 4 --exit 600
 ```
 
-> Short hand: `vanitye -c -p 99999 88888 -n 0 -z -s -x 4`
+> Short hand: `vanitye -c -p 99999 88888 -n 0 -z -s -x 4 -e 600`
     
 ### Vanity score
 A feature helps you lower wasting time spent for reviewing all generated addresses
